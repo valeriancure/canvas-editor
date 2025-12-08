@@ -2080,14 +2080,29 @@ export class Draw {
           } = positionList[curRow.startIndex + j]
           // 元素向左偏移量
           const offsetX = element.left || 0
-          this.highlight.recordFillInfo(
-            ctx,
-            x - offsetX,
-            y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
-            element.metrics.width + offsetX,
-            curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
-            highlight
-          )
+          // 对于控件，使用rowMargin而不是highlightMarginHeight以匹配边框
+          const isControlHighlight = !!element.controlId && !element.highlight
+          if (isControlHighlight) {
+            const { scale } = this.options
+            const rowMargin = this.getElementRowMargin(element)
+            this.highlight.recordFillInfo(
+              ctx,
+              x - offsetX,
+              y + rowMargin,
+              element.metrics.width + offsetX,
+              curRow.height - 2 * rowMargin + 4 * scale,
+              highlight
+            )
+          } else {
+            this.highlight.recordFillInfo(
+              ctx,
+              x - offsetX,
+              y + marginHeight - highlightMarginHeight,
+              element.metrics.width + offsetX,
+              curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
+              highlight
+            )
+          }
         } else if (preElement?.highlight) {
           // 之前是高亮元素，当前不是需立即绘制
           this.highlight.render(ctx)
