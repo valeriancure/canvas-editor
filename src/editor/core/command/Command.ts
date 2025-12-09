@@ -109,6 +109,7 @@ export class Command {
   public executeLocationControl: CommandAdapt['locationControl']
   public executeInsertControl: CommandAdapt['insertControl']
   public executeJumpControl: CommandAdapt['jumpControl']
+  public executeMoveCursorAfterControl: CommandAdapt['moveCursorAfterControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
@@ -294,5 +295,6 @@ export class Command {
     this.executeLocationControl = adapt.locationControl.bind(adapt)
     this.executeInsertControl = adapt.insertControl.bind(adapt)
     this.executeJumpControl = adapt.jumpControl.bind(adapt)
+    this.executeMoveCursorAfterControl = adapt.moveCursorAfterControl.bind(adapt)
   }
 }

@@ -1659,6 +1659,51 @@ export class Control {
     })
   }
 
+  public moveCursorAfterControl(): boolean {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex || !~endIndex || startIndex !== endIndex) return false
+    
+    const elementList = this.getElementList()
+    const element = elementList[startIndex]
+    
+    if (!element?.controlId) return false
+    
+    if (element.controlComponent === ControlComponent.POSTFIX) return false
+    
+    let postfixIndex = startIndex + 1
+    while (postfixIndex < elementList.length) {
+      const nextElement = elementList[postfixIndex]
+      if (nextElement.controlId !== element.controlId) break
+      if (nextElement.controlComponent === ControlComponent.POSTFIX) {
+        while (postfixIndex < elementList.length - 1) {
+          const followingElement = elementList[postfixIndex + 1]
+          if (followingElement.controlId !== element.controlId) {
+            this.range.setRange(postfixIndex, postfixIndex)
+            this.draw.render({
+              curIndex: postfixIndex,
+              isCompute: false,
+              isSetCursor: true,
+              isSubmitHistory: false
+            })
+            return true
+          }
+          postfixIndex++
+        }
+        this.range.setRange(postfixIndex, postfixIndex)
+        this.draw.render({
+          curIndex: postfixIndex,
+          isCompute: false,
+          isSetCursor: true,
+          isSubmitHistory: false
+        })
+        return true
+      }
+      postfixIndex++
+    }
+    
+    return false
+  }
+
   public setMinWidthControlInfo(option: ISetControlRowFlexOption) {
     const { row, rowElement, controlRealWidth, availableWidth } = option
     if (!rowElement.control?.minWidth) return

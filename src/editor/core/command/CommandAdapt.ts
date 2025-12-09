@@ -2379,6 +2379,10 @@ export class CommandAdapt {
     })
   }
 
+  public moveCursorAfterControl(): boolean {
+    return this.draw.getControl().moveCursorAfterControl()
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
