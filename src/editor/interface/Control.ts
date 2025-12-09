@@ -82,6 +82,10 @@ export interface IControlBasic {
   rowFlex?: RowFlex
   preText?: string
   postText?: string
+  activeBackgroundColor?: string
+  disabledBackgroundColor?: string
+  existValueBackgroundColor?: string
+  noValueBackgroundColor?: string
 }
 
 export interface IControlStyle {
