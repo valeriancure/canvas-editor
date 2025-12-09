@@ -40,11 +40,11 @@ export class ControlBorder {
     } = this.options
     const { x, y, width, height } = this.borderRect
     ctx.save()
-    ctx.translate(0, 1 * scale)
+    // ctx.translate(0, 1 * scale)
     ctx.lineWidth = borderWidth * scale
     ctx.strokeStyle = borderColor
     ctx.beginPath()
-    ctx.rect(x, y, width, height)
+    ctx.rect(x, y, width, height + 4 * scale)
     ctx.stroke()
     ctx.restore()
     this.clearBorderInfo()
