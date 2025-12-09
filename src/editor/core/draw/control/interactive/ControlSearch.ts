@@ -37,15 +37,20 @@ export class ControlSearch {
   public getControlHighlight(elementList: IElement[], index: number) {
     const {
       control: {
-        activeBackgroundColor,
-        disabledBackgroundColor,
-        existValueBackgroundColor,
-        noValueBackgroundColor
+        activeBackgroundColor: globalActiveColor,
+        disabledBackgroundColor: globalDisabledColor,
+        existValueBackgroundColor: globalExistValueColor,
+        noValueBackgroundColor: globalNoValueColor
       }
     } = this.options
     const element = elementList[index]
     const isPrintMode = this.draw.isPrintMode()
     const activeControlElement = this.control.getActiveControl()?.getElement()
+    // Priorité: propriétés du contrôle individuel > options globales
+    const activeBackgroundColor = element.control?.activeBackgroundColor || globalActiveColor
+    const disabledBackgroundColor = element.control?.disabledBackgroundColor || globalDisabledColor
+    const existValueBackgroundColor = element.control?.existValueBackgroundColor || globalExistValueColor
+    const noValueBackgroundColor = element.control?.noValueBackgroundColor || globalNoValueColor
     // 颜色配置：元素 > 控件激活 > 控件禁用 > 控件存在值 > 控件不存在值
     let isActiveControlHighlight = false
     let isDisabledControlHighlight = false
