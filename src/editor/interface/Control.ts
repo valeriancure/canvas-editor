@@ -141,6 +141,7 @@ export interface IControlInstance {
   ): number
   keydown(evt: KeyboardEvent): number | null
   cut(): number
+  getIsPopup?(): boolean
 }
 
 export interface IControlContext {
