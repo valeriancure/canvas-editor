@@ -2,6 +2,7 @@ export enum KeyMap {
   Delete = 'Delete',
   Backspace = 'Backspace',
   Enter = 'Enter',
+  Space = ' ',
   Left = 'ArrowLeft',
   Right = 'ArrowRight',
   Up = 'ArrowUp',
