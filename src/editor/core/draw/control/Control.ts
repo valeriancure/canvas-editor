@@ -975,6 +975,7 @@ export class Control {
         ) {
           result.push({
             ...element.control,
+            controlId: element.controlId,
             zone,
             value: textControlValue || null,
             innerText: textControlValue || null,
@@ -995,6 +996,7 @@ export class Control {
             .join('')
           result.push({
             ...element.control,
+            controlId: element.controlId,
             zone,
             value: code || null,
             innerText: innerText || null

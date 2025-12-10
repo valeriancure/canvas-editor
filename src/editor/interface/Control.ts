@@ -163,6 +163,7 @@ export interface IGetControlValueOption {
 }
 
 export type IGetControlValueResult = (Omit<IControl, 'value'> & {
+  controlId?: string
   value: string | null
   innerText: string | null
   zone: EditorZone
