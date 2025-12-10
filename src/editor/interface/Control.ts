@@ -141,6 +141,7 @@ export interface IControlInstance {
   ): number
   keydown(evt: KeyboardEvent): number | null
   cut(): number
+  getIsPopup?(): boolean
 }
 
 export interface IControlContext {
@@ -162,6 +163,7 @@ export interface IGetControlValueOption {
 }
 
 export type IGetControlValueResult = (Omit<IControl, 'value'> & {
+  controlId?: string
   value: string | null
   innerText: string | null
   zone: EditorZone

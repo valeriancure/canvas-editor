@@ -64,6 +64,23 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   const isReadonly = draw.isReadonly()
   if (isReadonly) return
+  
+  // If active control with popup, let control handle navigation
+  // 如果有打开弹窗的活动控件，让控件处理导航
+  const control = draw.getControl()
+  const activeControl = control.getActiveControl()
+  if (activeControl && activeControl.getIsPopup && activeControl.getIsPopup()) {
+    const curIndex = control.keydown(evt)
+    if (curIndex == null) return
+    draw.render({
+      curIndex,
+      isCompute: false,
+      isSubmitHistory: false,
+      isSetCursor: true
+    })
+    return
+  }
+  
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return

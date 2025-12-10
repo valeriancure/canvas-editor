@@ -43,6 +43,10 @@
   font-weight: 700;
 }
 
+.ce-select-control-popup ul li.keyboard-selected {
+  background-color: #EEF2FD;
+}
+
 .ce-select-checkbox,
 .ce-select-radio {
   margin-right: 8px;

@@ -9,10 +9,57 @@ import { left } from './left'
 import { right } from './right'
 import { tab } from './tab'
 import { updown } from './updown'
+import { toggleCheckboxRadio } from './checkbox-radio'
+import { ControlType } from '../../../../dataset/enum/Control'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   if (host.isComposing) return
   const draw = host.getDraw()
+
+  // Check if a control popup is open (Select, Date)
+  // 检查控件弹窗是否打开（选择框、日期）
+  const control = draw.getControl()
+  const activeControl = control.getActiveControl()
+  const hasOpenPopup =
+    activeControl && activeControl.getIsPopup && activeControl.getIsPopup()
+
+  // If popup open, let control handle Enter and Space
+  // 如果弹窗打开，让控件处理回车和空格键
+  if (hasOpenPopup && (evt.key === KeyMap.Enter || evt.key === ' ')) {
+    const curIndex = control.keydown(evt)
+    if (curIndex != null) {
+      draw.render({
+        curIndex,
+        isCompute: false,
+        isSubmitHistory: false,
+        isSetCursor: true
+      })
+    }
+    return
+  }
+
+  // Handle Enter/Space for checkbox/radio toggle
+  // 处理回车/空格键切换复选框/单选框
+  if (evt.key === KeyMap.Enter || evt.key === KeyMap.Space) {
+    // Block space for number controls (like Enter is blocked)
+    const control = draw.getControl()
+    const activeControl = control.getActiveControl()
+    if (activeControl && control.getIsRangeWithinControl()) {
+      const element = activeControl.getElement()
+      if (
+        element.control?.type === ControlType.NUMBER &&
+        evt.key === KeyMap.Space
+      ) {
+        evt.preventDefault()
+        return
+      }
+    }
+
+    if (toggleCheckboxRadio(evt, host)) {
+      return
+    }
+  }
+
   // 键盘事件逻辑分发
   if (evt.key === KeyMap.Backspace) {
     backspace(evt, host)

@@ -39,6 +39,7 @@ export class SelectControl implements IControlInstance {
   private options: DeepRequired<IEditorOption>
   private VALUE_DELIMITER = ','
   private DEFAULT_MULTI_SELECT_DELIMITER = ','
+  private selectedIndex = -1
 
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()
@@ -184,6 +185,15 @@ export class SelectControl implements IControlInstance {
     if (this.control.getIsDisabledControl()) {
       return null
     }
+
+    // Navigate dropdown if popup is open / 如果弹窗打开则导航下拉列表
+    if (this.isPopup && this.selectDom) {
+      const result = this.handlePopupKeydown(evt)
+      if (result !== undefined) {
+        return result
+      }
+    }
+
     const elementList = this.control.getElementList()
     const range = this.control.getRange()
     // 收缩边界到Value内
@@ -480,12 +490,120 @@ export class SelectControl implements IControlInstance {
     }
   }
 
+  private handlePopupKeydown(evt: KeyboardEvent): number | null | undefined {
+    const control = this.element.control!
+    const valueSets = control.valueSets
+    if (!valueSets || valueSets.length === 0) return undefined
+
+    if (evt.key === KeyMap.Down) {
+      evt.preventDefault()
+      this.selectedIndex = Math.min(
+        this.selectedIndex + 1,
+        valueSets.length - 1
+      )
+      this.updatePopupSelection()
+      const range = this.control.getRange()
+      return range.endIndex
+    } else if (evt.key === KeyMap.Up) {
+      evt.preventDefault()
+      this.selectedIndex = Math.max(this.selectedIndex - 1, 0)
+      this.updatePopupSelection()
+      const range = this.control.getRange()
+      return range.endIndex
+    } else if (evt.key === KeyMap.Enter || evt.key === ' ') {
+      evt.preventDefault()
+      if (this.selectedIndex >= 0 && this.selectedIndex < valueSets.length) {
+        this.selectItemAtIndex(this.selectedIndex)
+      }
+      const range = this.control.getRange()
+      return range.endIndex
+    }
+
+    return undefined
+  }
+
+  private updatePopupSelection() {
+    if (!this.selectDom) return
+    const items = this.selectDom.querySelectorAll('li')
+    items.forEach((item, index) => {
+      if (index === this.selectedIndex) {
+        item.classList.add('keyboard-selected')
+        item.scrollIntoView({ block: 'nearest' })
+      } else {
+        item.classList.remove('keyboard-selected')
+      }
+    })
+  }
+
+  private selectItemAtIndex(index: number) {
+    const control = this.element.control!
+    const valueSets = control.valueSets
+    if (!valueSets || index < 0 || index >= valueSets.length) return
+
+    const valueSet = valueSets[index]
+    let codes = this.getCodes()
+    const codeIndex = codes.findIndex(code => code === valueSet.code)
+
+    if (control.isMultiSelect) {
+      if (~codeIndex) {
+        codes.splice(codeIndex, 1)
+      } else {
+        codes.push(valueSet.code)
+      }
+    } else {
+      if (~codeIndex) {
+        codes = []
+      } else {
+        codes = [valueSet.code]
+      }
+    }
+
+    this.setSelect(codes.join(this.VALUE_DELIMITER))
+
+    // For multi-select, update active classes in popup / 多选时更新弹窗中的激活类
+    if (control.isMultiSelect && this.isPopup && this.selectDom) {
+      this.updatePopupActiveStates()
+    }
+  }
+
+  private updatePopupActiveStates() {
+    if (!this.selectDom) return
+    const codes = this.getCodes()
+    const items = this.selectDom.querySelectorAll('li')
+    const control = this.element.control!
+    const valueSets = control.valueSets
+
+    items.forEach((item, index) => {
+      if (valueSets && index < valueSets.length) {
+        const isChecked = codes.includes(valueSets[index].code)
+        if (isChecked) {
+          item.classList.add('active')
+        } else {
+          item.classList.remove('active')
+        }
+
+        // Also update checkbox/radio if present / 同时更新复选框/单选框（如果存在）
+        const input = item.querySelector('input')
+        if (input) {
+          input.checked = isChecked
+        }
+      }
+    })
+  }
+
   private _createSelectPopupDom() {
     const control = this.element.control!
     const valueSets = control.valueSets
     if (!Array.isArray(valueSets) || !valueSets.length) return
     const position = this.control.getPosition()
     if (!position) return
+
+    // Initialize selectedIndex with currently selected element / 用当前选中的元素初始化 selectedIndex
+    const codes = this.getCodes()
+    this.selectedIndex =
+      codes.length > 0 ? valueSets.findIndex(vs => codes.includes(vs.code)) : 0
+    if (this.selectedIndex < 0) this.selectedIndex = 0
+
     // dom树：<div><ul><li>item</li></ul></div>
     const selectPopupContainer = document.createElement('div')
     selectPopupContainer.classList.add(`${EDITOR_PREFIX}-select-control-popup`)
@@ -494,7 +612,7 @@ export class SelectControl implements IControlInstance {
     for (let v = 0; v < valueSets.length; v++) {
       const valueSet = valueSets[v]
       const li = document.createElement('li')
-      let codes = this.getCodes()
+      const codes = this.getCodes()
       const isChecked = codes.includes(valueSet.code)
 
       // 添加选择框（复选框或单选框）
@@ -514,22 +632,12 @@ export class SelectControl implements IControlInstance {
         li.classList.add('active')
       }
 
+      if (v === this.selectedIndex) {
+        li.classList.add('keyboard-selected')
+      }
+
       li.onclick = () => {
-        const codeIndex = codes.findIndex(code => code === valueSet.code)
-        if (control.isMultiSelect) {
-          if (~codeIndex) {
-            codes.splice(codeIndex, 1)
-          } else {
-            codes.push(valueSet.code)
-          }
-        } else {
-          if (~codeIndex) {
-            codes = []
-          } else {
-            codes = [valueSet.code]
-          }
-        }
-        this.setSelect(codes.join(this.VALUE_DELIMITER))
+        this.selectItemAtIndex(v)
       }
 
       const span = document.createElement('span')
@@ -574,6 +682,8 @@ export class SelectControl implements IControlInstance {
   public destroy() {
     if (!this.isPopup) return
     this.selectDom?.remove()
+    this.selectDom = null
+    this.selectedIndex = -1
     this.isPopup = false
   }
 }
