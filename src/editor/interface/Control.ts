@@ -216,6 +216,7 @@ export interface INextControlContext {
 
 export interface IInitNextControlOption {
   direction?: MoveDirection
+  filter?: (element: IElement) => boolean
 }
 
 export interface ILocationControlOption {
