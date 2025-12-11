@@ -2227,6 +2227,10 @@ export class CommandAdapt {
     })
   }
 
+  public setTabJumpFilter(filter: ((element: IElement) => boolean) | null) {
+    this.draw.getControl().setTabJumpFilter(filter)
+  }
+
   public updateOptions(payload: IUpdateOption) {
     const newOption = mergeOption(payload)
     Object.entries(newOption).forEach(([key, value]) => {
@@ -2373,9 +2377,10 @@ export class CommandAdapt {
     this.draw.insertElementList([cloneElement])
   }
 
-  public jumpControl(payload?: { direction?: MoveDirection }) {
+  public jumpControl(payload?: { direction?: MoveDirection; filter?: (element: IElement) => boolean }) {
     this.draw.getControl().initNextControl({
-      direction: payload?.direction
+      direction: payload?.direction,
+      filter: payload?.filter
     })
   }
 

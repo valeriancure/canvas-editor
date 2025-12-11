@@ -106,6 +106,7 @@ export class Command {
   public executeSetControlProperties: CommandAdapt['setControlProperties']
   public executeSetControlPropertiesList: CommandAdapt['setControlPropertiesList']
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
+  public executeSetTabJumpFilter: CommandAdapt['setTabJumpFilter']
   public executeLocationControl: CommandAdapt['locationControl']
   public executeInsertControl: CommandAdapt['insertControl']
   public executeJumpControl: CommandAdapt['jumpControl']
@@ -290,6 +291,7 @@ export class Command {
     this.executeSetControlPropertiesList =
       adapt.setControlPropertiesList.bind(adapt)
     this.executeSetControlHighlight = adapt.setControlHighlight.bind(adapt)
+    this.executeSetTabJumpFilter = adapt.setTabJumpFilter.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
     this.getControlList = adapt.getControlList.bind(adapt)
     this.executeLocationControl = adapt.locationControl.bind(adapt)

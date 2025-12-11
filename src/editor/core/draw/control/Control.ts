@@ -86,6 +86,7 @@ export class Control {
   private activeControl: IControlInstance | null
   private activeControlValue: IElement[]
   private preElement: IElement | null
+  private tabJumpFilter: ((element: IElement) => boolean) | null
 
   constructor(draw: Draw) {
     this.controlBorder = new ControlBorder(draw)
@@ -101,11 +102,20 @@ export class Control {
     this.activeControl = null
     this.activeControlValue = []
     this.preElement = null
+    this.tabJumpFilter = null
   }
 
   // 搜索高亮匹配
   public setHighlightList(payload: IControlHighlight[]) {
     this.controlSearch.setHighlightList(payload)
+  }
+
+  public setTabJumpFilter(filter: ((element: IElement) => boolean) | null) {
+    this.tabJumpFilter = filter
+  }
+
+  public getTabJumpFilter(): ((element: IElement) => boolean) | null {
+    return this.tabJumpFilter
   }
 
   public computeHighlightList() {
@@ -1404,7 +1414,7 @@ export class Control {
     this.controlBorder.render(ctx)
   }
 
-  public getPreControlContext(): INextControlContext | null {
+  public getPreControlContext(filter?: (element: IElement) => boolean): INextControlContext | null {
     if (!this.activeControl) return null
     const position = this.draw.getPosition()
     const positionContext = position.getPositionContext()
@@ -1447,6 +1457,9 @@ export class Control {
           !element.controlId ||
           element.controlId === controlElement.controlId
         ) {
+          continue
+        }
+        if (filter && !filter(element)) {
           continue
         }
         // 找到尾部第一个非占位符元素
@@ -1525,7 +1538,7 @@ export class Control {
     return null
   }
 
-  public getNextControlContext(): INextControlContext | null {
+  public getNextControlContext(filter?: (element: IElement) => boolean): INextControlContext | null {
     if (!this.activeControl) return null
     const position = this.draw.getPosition()
     const positionContext = position.getPositionContext()
@@ -1570,6 +1583,9 @@ export class Control {
           elementList[e + 1]?.controlComponent === ControlComponent.PREFIX ||
           elementList[e + 1]?.controlComponent === ControlComponent.PRE_TEXT
         ) {
+          continue
+        }
+        if (filter && !filter(element)) {
           continue
         }
         return {
@@ -1636,12 +1652,12 @@ export class Control {
   }
 
   public initNextControl(option: IInitNextControlOption = {}) {
-    const { direction = MoveDirection.DOWN } = option
+    const { direction = MoveDirection.DOWN, filter } = option
     let context: INextControlContext | null = null
     if (direction === MoveDirection.UP) {
-      context = this.getPreControlContext()
+      context = this.getPreControlContext(filter)
     } else {
-      context = this.getNextControlContext()
+      context = this.getNextControlContext(filter)
     }
     if (!context) return
     const { nextIndex, positionContext } = context

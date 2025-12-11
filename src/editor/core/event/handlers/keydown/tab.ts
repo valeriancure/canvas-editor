@@ -16,7 +16,8 @@ export function tab(evt: KeyboardEvent, host: CanvasEvent) {
   const activeControl = control.getActiveControl()
   if (activeControl && control.getIsRangeWithinControl()) {
     control.initNextControl({
-      direction: evt.shiftKey ? MoveDirection.UP : MoveDirection.DOWN
+      direction: evt.shiftKey ? MoveDirection.UP : MoveDirection.DOWN,
+      filter: control.getTabJumpFilter() || undefined
     })
   } else {
     const rangeManager = draw.getRange()
